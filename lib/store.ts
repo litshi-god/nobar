@@ -6,8 +6,13 @@ export interface NobarConfig {
   updatedAt: string;
 }
 
+// Default streaming status, configurable via env (NOBAR_DEFAULT_STATUS=online|offline)
+// Falls back to 'online' if not set or invalid.
+const envStatus = process.env.NOBAR_DEFAULT_STATUS;
+const initialStatus: 'online' | 'offline' = envStatus === 'offline' ? 'offline' : 'online';
+
 export const defaultConfig: NobarConfig = {
-  status: 'offline',
+  status: initialStatus,
   matchTitle: 'FIFA World Cup 2026',
   matchDescription: 'Pertandingan segera dimulai...',
   iframeCode: '',
