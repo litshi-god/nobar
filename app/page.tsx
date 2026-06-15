@@ -200,8 +200,8 @@ export default function HomePage() {
     try {
       const res = await fetch('/api/scores');
       const data = await res.json();
-      setGames(data.games || []);
-      setGroups(data.groups || []);
+      setGames(Array.isArray(data.games) ? data.games : []);
+      setGroups(Array.isArray(data.groups) ? data.groups : []);
       setLastUpdate(new Date().toLocaleTimeString('id-ID'));
     } catch {}
     setLoadingScores(false);
