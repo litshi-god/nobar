@@ -154,6 +154,32 @@ function GroupTable({ group }: { group: Group }) {
   );
 }
 
+function IframePlayer({ code }: { code: string }) {
+  // Extract src from iframe string
+  const srcMatch = code.match(/src=["']([^"']+)["']/i);
+  const src = srcMatch ? srcMatch[1] : null;
+
+  if (!src) {
+    return (
+      <div className="iframe-wrapper rounded-none" style={{ borderRadius: 0 }}
+        dangerouslySetInnerHTML={{ __html: code }}
+      />
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%', background: '#000' }}>
+      <iframe
+        src={src}
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowFullScreen
+        scrolling="no"
+      />
+    </div>
+  );
+}
+
 export default function HomePage() {
   const [config, setConfig] = useState<NobarConfig | null>(null);
   const [games, setGames] = useState<Game[]>([]);
@@ -269,9 +295,7 @@ export default function HomePage() {
                 </div>
               </div>
               {/* Iframe */}
-              <div className="iframe-wrapper rounded-none" style={{ borderRadius: 0 }}
-                dangerouslySetInnerHTML={{ __html: config.iframeCode }}
-              />
+              <IframePlayer code={config.iframeCode} />
             </div>
             <p className="text-xs text-center text-[#64748b] mt-2">
               ⚠️ Jika stream tidak muncul, coba refresh halaman atau disable adblocker

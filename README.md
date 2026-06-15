@@ -1,4 +1,4 @@
-# ⚽ Nobar
+# ⚽ Nobar Pildun 2026
 
 Web nonton bareng FIFA World Cup 2026 dengan live score, live stats, dan admin panel.
 
