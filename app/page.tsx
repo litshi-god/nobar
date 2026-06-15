@@ -247,11 +247,11 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             {config && (
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${
-                config.status === 'online'
+                config.iframeCode
                   ? 'bg-[#003320] text-[#00C853] border border-[#00C853]/30'
                   : 'bg-[#1a0a0a] text-[#FF1744] border border-[#FF1744]/30'
               }`}>
-                {config.status === 'online' ? (
+                {config.iframeCode ? (
                   <><span className="live-dot" style={{ background: '#00C853' }} /> STREAMING ON</>
                 ) : (
                   <><span className="w-2 h-2 rounded-full bg-[#FF1744] inline-block" /> OFFLINE</>
@@ -265,19 +265,7 @@ export default function HomePage() {
       <main className="max-w-6xl mx-auto px-4 py-6">
 
         {/* Status Banner */}
-        {config?.status === 'offline' ? (
-          <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a0a0a 0%, #0f1a2e 100%)', border: '1px solid #2a1a1a' }}>
-            <div className="p-8 text-center">
-              <div className="text-6xl mb-4">📺</div>
-              <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '2rem', color: '#F5C518', marginBottom: '12px' }}>
-                LAYANAN NOBAR TIDAK TERSEDIA
-              </h2>
-              <p className="text-[#94a3b8] text-base max-w-md mx-auto">
-                Streaming sedang tidak aktif saat ini. Pantau terus live score di bawah ya! 🏆
-              </p>
-            </div>
-          </div>
-        ) : config?.status === 'online' && config.iframeCode ? (
+        {config?.iframeCode ? (
           <div className="mb-8">
             <div className="rounded-2xl overflow-hidden" style={{ border: '2px solid #F5C518', boxShadow: '0 0 40px rgba(245,197,24,0.2)' }}>
               {/* Match header */}
@@ -379,7 +367,6 @@ export default function HomePage() {
         {/* Footer */}
         <footer className="mt-12 pt-6 border-t border-[#1e3a5f] text-center text-xs text-[#475569]">
           <p>⚽ Nobar Pildun 2026 • FIFA World Cup USA/MEX/CAN</p>
-          <p className="mt-1">Live score powered by worldcup26.ir</p>
         </footer>
       </main>
     </div>
