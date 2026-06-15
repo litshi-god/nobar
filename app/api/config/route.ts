@@ -3,8 +3,11 @@ import { getConfig, setConfig } from '@/lib/store';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'nobar2026';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  return NextResponse.json(getConfig());
+  const config = await getConfig();
+  return NextResponse.json(config);
 }
 
 export async function POST(req: NextRequest) {
@@ -12,8 +15,7 @@ export async function POST(req: NextRequest) {
   if (authHeader !== ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
   const body = await req.json();
-  const updated = setConfig(body);
+  const updated = await setConfig(body);
   return NextResponse.json(updated);
 }

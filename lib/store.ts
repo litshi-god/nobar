@@ -1,6 +1,3 @@
-// Simple file-based store for Vercel (using JSON in /tmp or env)
-// For production, replace with Vercel KV or a database
-
 export interface NobarConfig {
   status: 'online' | 'offline';
   matchTitle: string;
@@ -17,14 +14,42 @@ export const defaultConfig: NobarConfig = {
   updatedAt: new Date().toISOString(),
 };
 
-// In-memory store (resets on serverless cold start — use Vercel KV for persistence)
+// Check if Vercel KV is available
+function hasKV(): boolean {
+  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+}
+
+const KV_KEY = 'nobar:config';
+
+export async function getConfig(): Promise<NobarConfig> {
+  if (hasKV()) {
+    try {
+      const { kv } = await import('@vercel/kv');
+      const data = await kv.get<NobarConfig>(KV_KEY);
+      return data ?? defaultConfig;
+    } catch (e) {
+      console.error('KV get error:', e);
+    }
+  }
+  // Fallback to in-memory (dev/no KV)
+  return memStore;
+}
+
+export async function setConfig(config: Partial<NobarConfig>): Promise<NobarConfig> {
+  const current = await getConfig();
+  const updated: NobarConfig = { ...current, ...config, updatedAt: new Date().toISOString() };
+
+  if (hasKV()) {
+    try {
+      const { kv } = await import('@vercel/kv');
+      await kv.set(KV_KEY, updated);
+    } catch (e) {
+      console.error('KV set error:', e);
+    }
+  }
+  memStore = updated;
+  return updated;
+}
+
+// In-memory fallback
 let memStore: NobarConfig = { ...defaultConfig };
-
-export function getConfig(): NobarConfig {
-  return memStore;
-}
-
-export function setConfig(config: Partial<NobarConfig>): NobarConfig {
-  memStore = { ...memStore, ...config, updatedAt: new Date().toISOString() };
-  return memStore;
-}
