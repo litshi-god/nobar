@@ -18,6 +18,15 @@ export default function AdminPage() {
   });
   const [adminKey, setAdminKey] = useState('');
 
+  // Restore session from sessionStorage on mount
+  useEffect(() => {
+    const savedKey = sessionStorage.getItem('nobar_admin_key');
+    if (savedKey) {
+      setAdminKey(savedKey);
+      setAuthed(true);
+    }
+  }, []);
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     // Verify by trying to fetch with the key
@@ -31,6 +40,7 @@ export default function AdminPage() {
         setAdminKey(password);
         setAuthed(true);
         setLoginError('');
+        sessionStorage.setItem('nobar_admin_key', password);
       } else {
         setLoginError('Password salah!');
       }
@@ -38,6 +48,7 @@ export default function AdminPage() {
       // Try simple approach: fetch config and check if password matches
       setAdminKey(password);
       setAuthed(true);
+      sessionStorage.setItem('nobar_admin_key', password);
     }
   }
 
@@ -136,7 +147,11 @@ export default function AdminPage() {
         </nav>
         <div className="absolute bottom-5 left-0 w-56 px-3">
           <button
-            onClick={() => setAuthed(false)}
+            onClick={() => {
+              setAuthed(false);
+              setAdminKey('');
+              sessionStorage.removeItem('nobar_admin_key');
+            }}
             className="btn-outline w-full text-sm"
           >
             🚪 Logout
