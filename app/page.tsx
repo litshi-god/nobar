@@ -21,8 +21,6 @@ const SOURCE_LABELS: Array<{ key: SourceKey; label: string }> = [
   { key: 'backup', label: 'Backup' },
 ];
 
-const FIGURE_ASSETS = Array.from({ length: 8 }, (_, index) => `/${index + 1}.png`);
-
 interface ChatMessage {
   id: number;
   username: string;
@@ -140,18 +138,15 @@ function EmbedPlayer({ code }: { code: string }) {
   );
 }
 
-function FigureAssets() {
+function FigureAssets({ figures }: { figures: string[] }) {
   return (
     <div className="figure-assets" aria-hidden="true">
-      {FIGURE_ASSETS.map((src, index) => (
+      {figures.map((src, index) => (
         <img
           key={src}
           src={src}
           alt=""
           className={`figure-asset figure-asset-${index + 1}`}
-          onError={event => {
-            event.currentTarget.style.display = 'none';
-          }}
         />
       ))}
     </div>
@@ -180,6 +175,7 @@ function ArgentinaFigure() {
 export default function HomePage() {
   const [config, setConfig] = useState<NobarConfig | null>(null);
   const [sources, setSources] = useState<SourceMap>(SOURCE_PRESETS);
+  const [figures, setFigures] = useState<string[]>([]);
   const [selectedSource, setSelectedSource] = useState<SourceKey>('fox');
   const [usernameInput, setUsernameInput] = useState('');
   const [username, setUsername] = useState('');
@@ -207,12 +203,21 @@ export default function HomePage() {
     } catch {}
   }, []);
 
+  const fetchFigures = useCallback(async () => {
+    try {
+      const res = await fetch('/api/figures', { cache: 'no-store' });
+      const data = await res.json();
+      setFigures(Array.isArray(data.figures) ? data.figures : []);
+    } catch {}
+  }, []);
+
   useEffect(() => {
     fetchConfig();
     fetchSources();
+    fetchFigures();
     const configInterval = setInterval(fetchConfig, 10000);
     return () => clearInterval(configInterval);
-  }, [fetchConfig, fetchSources]);
+  }, [fetchConfig, fetchSources, fetchFigures]);
 
   const activeIframeCode =
     selectedSource === 'backup'
@@ -288,7 +293,7 @@ export default function HomePage() {
           </div>
 
           <ArgentinaFigure />
-          <FigureAssets />
+          <FigureAssets figures={figures} />
         </section>
 
         <section className="stream-stage" aria-label="Live streaming frame">
