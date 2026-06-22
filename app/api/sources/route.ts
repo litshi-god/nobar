@@ -6,6 +6,7 @@ function normalizeEmbed(value: string | undefined) {
   const raw = (value || '').trim();
   if (!raw) return '';
   if (raw.startsWith('<')) return raw;
+  if (/\.m3u8($|\?)/i.test(raw)) return raw;
 
   return `<iframe src="${raw}" width="100%" height="100%" frameborder="0" scrolling="no" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
 }

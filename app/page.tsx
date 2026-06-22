@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import type HlsType from 'hls.js';
 import type { NobarConfig } from '@/lib/store';
 
 type SourceKey = 'fox' | 'tcn' | 'bbc' | 'backup';
@@ -83,9 +84,64 @@ function SendIcon({ className = '' }: { className?: string }) {
   );
 }
 
+function HlsPlayer({ src }: { src: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const player = video;
+
+    let hls: HlsType | null = null;
+    let cancelled = false;
+
+    async function setupHls() {
+      if (player.canPlayType('application/vnd.apple.mpegurl')) {
+        player.src = src;
+        return;
+      }
+
+      const HlsModule = await import('hls.js');
+      const Hls = HlsModule.default;
+      if (cancelled || !Hls.isSupported()) {
+        player.src = src;
+        return;
+      }
+
+      hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+      });
+      hls.loadSource(src);
+      hls.attachMedia(player);
+    }
+
+    setupHls();
+
+    return () => {
+      cancelled = true;
+      if (hls) hls.destroy();
+      player.removeAttribute('src');
+      player.load();
+    };
+  }, [src]);
+
+  return (
+    <div className="argentina-player hls-player">
+      <video
+        ref={videoRef}
+        controls
+        playsInline
+        preload="metadata"
+      />
+    </div>
+  );
+}
+
 function EmbedPlayer({ code }: { code: string }) {
   const embedRef = useRef<HTMLDivElement>(null);
   const trimmedCode = code.trim();
+  const isHlsSource = /^https?:\/\/.+\.m3u8($|\?)/i.test(trimmedCode);
   const isHtmlEmbed = trimmedCode.startsWith('<');
   const isIframeEmbed = /^<iframe[\s>]/i.test(trimmedCode);
   const srcMatch = isIframeEmbed ? trimmedCode.match(/src=["']([^"']+)["']/i) : null;
@@ -105,6 +161,10 @@ function EmbedPlayer({ code }: { code: string }) {
       document.body.appendChild(executableScript);
     });
   }, [trimmedCode, isHtmlEmbed, isIframeEmbed]);
+
+  if (isHlsSource) {
+    return <HlsPlayer src={trimmedCode} />;
+  }
 
   if (isHtmlEmbed && !isIframeEmbed) {
     return (

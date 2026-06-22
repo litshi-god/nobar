@@ -352,6 +352,14 @@ body {
   border: 0;
 }
 
+.hls-player video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
 .embed-html {
   display: grid;
   place-items: center;
