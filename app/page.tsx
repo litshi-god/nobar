@@ -139,14 +139,20 @@ function EmbedPlayer({ code }: { code: string }) {
 }
 
 function FigureAssets({ figures }: { figures: string[] }) {
+  const sortedFigures = [...figures].sort((a, b) => {
+    if (a.endsWith('/4.png')) return -1;
+    if (b.endsWith('/4.png')) return 1;
+    return a.localeCompare(b);
+  });
+
   return (
     <div className="figure-gallery" aria-hidden="true">
-      {figures.map((src, index) => (
+      {sortedFigures.map((src, index) => (
         <img
           key={src}
           src={src}
           alt={`Argentina figure ${index + 1}`}
-          className="figure-gallery-item"
+          className={src.endsWith('/4.png') ? 'figure-gallery-item figure-gallery-main' : 'figure-gallery-item'}
         />
       ))}
     </div>
