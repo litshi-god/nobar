@@ -12,11 +12,7 @@ const envStatus = process.env.NOBAR_DEFAULT_STATUS;
 const initialStatus: 'online' | 'offline' = envStatus === 'offline' ? 'offline' : 'online';
 
 // Default iframe code, configurable via env (NOBAR_DEFAULT_IFRAME).
-// Falls back to FOX USA embed if not set. This keeps the player visible
-// even if in-memory config resets between serverless invocations
-// (e.g. no Vercel KV configured).
-const DEFAULT_IFRAME = '<iframe src="https://junkieembeds.pages.dev/embed/fox-usa" width="100%" height="100%" frameborder="0" scrolling="no" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
-const initialIframe = process.env.NOBAR_DEFAULT_IFRAME || DEFAULT_IFRAME;
+const initialIframe = process.env.NOBAR_DEFAULT_IFRAME || '';
 
 export const defaultConfig: NobarConfig = {
   status: initialStatus,

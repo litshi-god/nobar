@@ -1,14 +1,17 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import type { NobarConfig } from '@/lib/store';
 
 type SourceKey = 'fox' | 'tcn' | 'bbc' | 'backup';
 
-const SOURCE_PRESETS: Record<Exclude<SourceKey, 'backup'>, string> = {
-  fox: '<iframe src="https://junkieembeds.pages.dev/embed/fox-usa" width="100%" height="100%" frameborder="0" scrolling="no" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>',
-  tcn: '<iframe src="https://junkieembeds.pages.dev/embed/tcn" width="100%" height="100%" frameborder="0" scrolling="no" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>',
-  bbc: '<iframe src="https://junkieembeds.pages.dev/embed/bbc-sport" width="100%" height="100%" frameborder="0" scrolling="no" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>',
+type SourceMap = Record<SourceKey, string>;
+
+const SOURCE_PRESETS: SourceMap = {
+  fox: '',
+  tcn: '',
+  bbc: '',
+  backup: '',
 };
 
 const SOURCE_LABELS: Array<{ key: SourceKey; label: string }> = [
@@ -17,6 +20,8 @@ const SOURCE_LABELS: Array<{ key: SourceKey; label: string }> = [
   { key: 'bbc', label: 'BBC' },
   { key: 'backup', label: 'Backup' },
 ];
+
+const FIGURE_ASSETS = Array.from({ length: 8 }, (_, index) => `/${index + 1}.png`);
 
 interface ChatMessage {
   id: number;
@@ -80,15 +85,44 @@ function SendIcon({ className = '' }: { className?: string }) {
   );
 }
 
-function IframePlayer({ code }: { code: string }) {
-  const srcMatch = code.match(/src=["']([^"']+)["']/i);
+function EmbedPlayer({ code }: { code: string }) {
+  const embedRef = useRef<HTMLDivElement>(null);
+  const trimmedCode = code.trim();
+  const isHtmlEmbed = trimmedCode.startsWith('<');
+  const isIframeEmbed = /^<iframe[\s>]/i.test(trimmedCode);
+  const srcMatch = isIframeEmbed ? trimmedCode.match(/src=["']([^"']+)["']/i) : null;
   const src = srcMatch ? srcMatch[1] : null;
+
+  useEffect(() => {
+    const node = embedRef.current;
+    if (!node || !isHtmlEmbed || isIframeEmbed) return;
+
+    const scripts = Array.from(node.querySelectorAll('script'));
+    scripts.forEach(script => {
+      const executableScript = document.createElement('script');
+      Array.from(script.attributes).forEach(attribute => {
+        executableScript.setAttribute(attribute.name, attribute.value);
+      });
+      executableScript.text = script.text;
+      document.body.appendChild(executableScript);
+    });
+  }, [trimmedCode, isHtmlEmbed, isIframeEmbed]);
+
+  if (isHtmlEmbed && !isIframeEmbed) {
+    return (
+      <div
+        ref={embedRef}
+        className="embed-html argentina-player"
+        dangerouslySetInnerHTML={{ __html: trimmedCode }}
+      />
+    );
+  }
 
   if (!src) {
     return (
       <div
-        className="iframe-wrapper argentina-player"
-        dangerouslySetInnerHTML={{ __html: code }}
+        className="embed-html argentina-player"
+        dangerouslySetInnerHTML={{ __html: trimmedCode }}
       />
     );
   }
@@ -102,6 +136,24 @@ function IframePlayer({ code }: { code: string }) {
         scrolling="no"
         title="Live streaming"
       />
+    </div>
+  );
+}
+
+function FigureAssets() {
+  return (
+    <div className="figure-assets" aria-hidden="true">
+      {FIGURE_ASSETS.map((src, index) => (
+        <img
+          key={src}
+          src={src}
+          alt=""
+          className={`figure-asset figure-asset-${index + 1}`}
+          onError={event => {
+            event.currentTarget.style.display = 'none';
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -127,6 +179,7 @@ function ArgentinaFigure() {
 
 export default function HomePage() {
   const [config, setConfig] = useState<NobarConfig | null>(null);
+  const [sources, setSources] = useState<SourceMap>(SOURCE_PRESETS);
   const [selectedSource, setSelectedSource] = useState<SourceKey>('fox');
   const [usernameInput, setUsernameInput] = useState('');
   const [username, setUsername] = useState('');
@@ -141,17 +194,31 @@ export default function HomePage() {
     } catch {}
   }, []);
 
+  const fetchSources = useCallback(async () => {
+    try {
+      const res = await fetch('/api/sources', { cache: 'no-store' });
+      const data = await res.json();
+      setSources({
+        fox: data.fox || SOURCE_PRESETS.fox,
+        tcn: data.tcn || SOURCE_PRESETS.tcn,
+        bbc: data.bbc || SOURCE_PRESETS.bbc,
+        backup: data.backup || SOURCE_PRESETS.backup,
+      });
+    } catch {}
+  }, []);
+
   useEffect(() => {
     fetchConfig();
+    fetchSources();
     const configInterval = setInterval(fetchConfig, 10000);
     return () => clearInterval(configInterval);
-  }, [fetchConfig]);
+  }, [fetchConfig, fetchSources]);
 
-  const isOnline = Boolean(config?.iframeCode);
   const activeIframeCode =
     selectedSource === 'backup'
-      ? (config?.iframeCode || SOURCE_PRESETS.fox)
-      : SOURCE_PRESETS[selectedSource];
+      ? (config?.iframeCode || sources.backup)
+      : sources[selectedSource];
+  const isOnline = Boolean(activeIframeCode);
 
   function handleJoin(e: React.FormEvent) {
     e.preventDefault();
@@ -221,6 +288,7 @@ export default function HomePage() {
           </div>
 
           <ArgentinaFigure />
+          <FigureAssets />
         </section>
 
         <section className="stream-stage" aria-label="Live streaming frame">
@@ -254,7 +322,7 @@ export default function HomePage() {
               </div>
 
               {activeIframeCode ? (
-                <IframePlayer code={activeIframeCode} />
+                <EmbedPlayer code={activeIframeCode} />
               ) : (
                 <div className="argentina-player empty-player">
                   <BallIcon />
