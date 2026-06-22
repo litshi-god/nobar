@@ -140,13 +140,13 @@ function EmbedPlayer({ code }: { code: string }) {
 
 function FigureAssets({ figures }: { figures: string[] }) {
   return (
-    <div className="figure-assets" aria-hidden="true">
+    <div className="figure-gallery" aria-hidden="true">
       {figures.map((src, index) => (
         <img
           key={src}
           src={src}
-          alt=""
-          className={`figure-asset figure-asset-${index + 1}`}
+          alt={`Argentina figure ${index + 1}`}
+          className="figure-gallery-item"
         />
       ))}
     </div>
@@ -273,7 +273,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <FigureAssets figures={figures} />
+          {figures.length > 0 && <FigureAssets figures={figures} />}
         </section>
 
         <section className="stream-stage" aria-label="Live streaming frame">
