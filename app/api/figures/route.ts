@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FIGURE_FILES = Array.from({ length: 8 }, (_, index) => `${index + 1}.png`);
+const FIGURE_FILES = Array.from({ length: 7 }, (_, index) => `${index + 1}.png`);
 
 export async function GET() {
   const publicDir = path.join(process.cwd(), 'public');

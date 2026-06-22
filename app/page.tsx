@@ -153,25 +153,6 @@ function FigureAssets({ figures }: { figures: string[] }) {
   );
 }
 
-function ArgentinaFigure() {
-  return (
-    <div className="argentina-figure" aria-hidden="true">
-      <div className="figure-glow" />
-      <div className="figure-head" />
-      <div className="figure-shirt">
-        <span>10</span>
-      </div>
-      <div className="figure-arm figure-arm-left" />
-      <div className="figure-arm figure-arm-right" />
-      <div className="figure-leg figure-leg-left" />
-      <div className="figure-leg figure-leg-right" />
-      <div className="figure-ball">
-        <BallIcon />
-      </div>
-    </div>
-  );
-}
-
 export default function HomePage() {
   const [config, setConfig] = useState<NobarConfig | null>(null);
   const [sources, setSources] = useState<SourceMap>(SOURCE_PRESETS);
@@ -292,7 +273,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          <ArgentinaFigure />
           <FigureAssets figures={figures} />
         </section>
 
