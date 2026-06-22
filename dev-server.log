@@ -1,0 +1,12 @@
+
+> nobar-pildun@0.1.0 dev
+> next dev --port 3000
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.56.1:3000
+✓ Ready in 1951ms
+
+○ Compiling / ...
+ GET / 200 in 6.0s (next.js: 5.4s, application-code: 647ms)
+ GET / 200 in 214ms (next.js: 101ms, application-code: 113ms)

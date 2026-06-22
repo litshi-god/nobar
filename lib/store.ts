@@ -21,7 +21,7 @@ const initialIframe = process.env.NOBAR_DEFAULT_IFRAME || DEFAULT_IFRAME;
 export const defaultConfig: NobarConfig = {
   status: initialStatus,
   matchTitle: 'FIFA World Cup 2026',
-  matchDescription: 'Pertandingan segera dimulai...',
+  matchDescription: '',
   iframeCode: initialIframe,
   updatedAt: new Date().toISOString(),
 };
